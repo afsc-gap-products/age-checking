@@ -8,6 +8,12 @@
 #' ---
 #' 
 
+library(RODBC)
+library(tidyverse)
+library(janitor)
+library(cowplot)
+
+dir.create(here::here("plots"), showWarnings = F)
 
 channel <- odbcConnect(dsn = "AFSC", 
                         uid = rstudioapi::showPrompt(title = "Username", 
@@ -30,22 +36,38 @@ odbcGetInfo(channel)
 # species_code = 10285 (Alaska plaice)
 # species_code = 10112 (Kamchatka flounder)
 
+cruise <- 202101
+vessel <- 94
+species_code <- 10130
   
-RODBC::sqlQuery(channel, "select * from racebase.specimen
-                                where vessel = 94 and cruise = 202101 and species_code = 10130")
+spec_dat <- RODBC::sqlQuery(channel, paste0("select * from racebase.specimen
+                                where vessel = ", vessel, "and cruise = ", cruise, "and species_code =", species_code)) %>% 
+  as_tibble() %>% 
+  janitor::clean_names()
 
 
-#TOLDEO, broken from here out I think
-                                  write.csv(x=a, 
-                                            paste0("./data/oracle/",
-                                                   tolower(strsplit(x = locations[i], 
-                                                                    split = ".", 
-                                                                    fixed = TRUE)[[1]][2]),
-                                                   ".csv"))
-  locations<-c(
-    "RACEBASE.SPECIMEN")
+# plot: length at age
+p1 <- spec_dat %>% 
+  ggplot()+
+  geom_point(aes(x = age, y = length))
+# plot: weight at age
+p2 <- spec_dat %>% 
+  ggplot()+
+  geom_point(aes(x = age, y = weight))
 
+# plot: weight at length
+p3 <- spec_dat %>% 
+  ggplot()+
+  geom_point(aes(x = length, y = weight))
 
-plot(x=age, y=length, type="p")
-plot(x=age, y=weight, type="p")
-plot(x=weight, y=length, type="p")
+title <- ggdraw() + draw_label(paste("Cruise:" ,cruise, "Vessel:", vessel, "Species code:", species_code), 
+                               fontface='bold')
+
+p_all <- cowplot::plot_grid(title, p1, p2, p3,
+                            ncol=1, rel_heights=c(0.1, 1, 1, 1))
+
+p_all
+
+ggsave(plot = p_all, path = here::here("plots"), 
+       filename = paste0("cruise_", cruise,"_vessel_", vessel, 
+                                "_speciescode_", species_code, "diag_plot.png"))
