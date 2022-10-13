@@ -39,13 +39,12 @@ odbcGetInfo(channel)
 
 cruise <- 202101
 vessel <- 94
-species_code <- 10130
+species_code <- 10210
   
 spec_dat <- RODBC::sqlQuery(channel, paste0("select * from racebase.specimen
                                 where vessel = ", vessel, "and cruise = ", cruise, "and species_code =", species_code)) %>% 
   as_tibble() %>% 
   janitor::clean_names()
-
 
 # plot: length at age
 p1 <- spec_dat %>% 
@@ -72,3 +71,5 @@ p_all
 ggsave(plot = p_all, path = here::here("plots"), 
        filename = paste0("cruise_", cruise,"_vessel_", vessel, 
                                 "_speciescode_", species_code, "diag_plot.png"))
+
+# View(spec_dat) #View all specimen data if there is an issue, to find specimen id, etc.
