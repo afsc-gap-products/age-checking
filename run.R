@@ -27,6 +27,7 @@ odbcGetInfo(channel)
 # https://repository.library.noaa.gov/view/noaa/31570
 # Vessel = 94 (Vesteraalen)
 # Vessel = 162 (AK Knight)
+# Vessel = 134 (Northwest Explorer)
 
 # https://repository.library.noaa.gov/view/noaa/31571
 # species_code = 10130 (flathead sole)
